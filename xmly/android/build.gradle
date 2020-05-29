@@ -25,19 +25,35 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        main {
+            jniLibs.srcDir 'libs'
+        }
     }
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
+
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
     }
     lintOptions {
         disable 'InvalidPackage'
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    api 'com.google.code.gson:gson:2.8.6'
+    api 'com.squareup.okhttp3:okhttp:3.11.0'
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
 }
