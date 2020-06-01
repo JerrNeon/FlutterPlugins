@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:flutter/widgets.dart';
 import 'package:xmly/xmly_index.dart';
 import 'package:xmly_example/api_config.dart';
+import 'package:xmly_example/models/index.dart';
 
 class ApiManager {
   factory ApiManager() => _getInstacne();
@@ -36,5 +40,20 @@ class ApiManager {
       "page": page.toString(),
       "count": count.toString(),
     });
+  }
+
+  ///分页获取听单内容
+  Future<ColumnAlbumPageList> getColumnList({
+    @required int id, //听单ID
+    int page = 1,
+    int count = 200,
+  }) async {
+    String jsonStr =
+        await Xmly().baseGetRequest(url: ApiConfig.GET_COLUMN_CONTENT, params: {
+      "id": id.toString(),
+      "page": page.toString(),
+      "count": count.toString(),
+    });
+    return ColumnAlbumPageList.fromJson(json.decode(jsonStr));
   }
 }

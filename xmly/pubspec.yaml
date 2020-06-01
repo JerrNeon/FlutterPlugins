@@ -16,7 +16,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   json_model: ^0.0.2
   json_serializable: ^2.0.0
 

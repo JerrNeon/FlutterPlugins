@@ -5,58 +5,37 @@ part 'track.g.dart';
 
 @JsonSerializable()
 class Track {
-  Track();
+    Track();
 
-  num id;
-  String kind;
-  // ignore: non_constant_identifier_names
-  num category_id;
-  // ignore: non_constant_identifier_names
-  String track_title;
-  // ignore: non_constant_identifier_names
-  String track_tags;
-  // ignore: non_constant_identifier_names
-  String track_intro;
-  // ignore: non_constant_identifier_names
-  String cover_url_small;
-  // ignore: non_constant_identifier_names
-  String cover_url_middle;
-  // ignore: non_constant_identifier_names
-  String cover_url_large;
-  Announcer announcer;
-  num duration;
-  // ignore: non_constant_identifier_names
-  num play_count;
-  // ignore: non_constant_identifier_names
-  num favorite_count;
-  // ignore: non_constant_identifier_names
-  num comment_count;
-  // ignore: non_constant_identifier_names
-  num download_count;
-  // ignore: non_constant_identifier_names
-  num play_size_32;
-  // ignore: non_constant_identifier_names
-  num play_size_64;
-  // ignore: non_constant_identifier_names
-  num play_size_64_m4a;
-  // ignore: non_constant_identifier_names
-  num play_size_24_m4a;
-  // ignore: non_constant_identifier_names
-  num play_size_amr;
-  // ignore: non_constant_identifier_names
-  bool can_download;
-  // ignore: non_constant_identifier_names
-  num download_size;
-  // ignore: non_constant_identifier_names
-  SubordinatedAlbum subordinated_album;
-  num source;
-  // ignore: non_constant_identifier_names
-  num updated_at;
-  // ignore: non_constant_identifier_names
-  num created_at;
-  // ignore: non_constant_identifier_names
-  num order_num;
-
-  factory Track.fromJson(Map<String, dynamic> json) => _$TrackFromJson(json);
-  Map<String, dynamic> toJson() => _$TrackToJson(this);
+    num id;
+    String kind;
+    @JsonKey(name : 'category_id') int categoryId;
+    @JsonKey(name : 'track_title') String trackTitle;
+    @JsonKey(name : 'track_tags') String trackTags;
+    @JsonKey(name : 'track_intro') String trackTntro;
+    @JsonKey(name : 'cover_url_small') String coverUrlSmall;
+    @JsonKey(name : 'cover_url_middle') String coverUrlMiddle;
+    @JsonKey(name : 'cover_url_large') String coverUrlLarge;
+    Announcer announcer;
+    num duration;
+    @JsonKey(name : 'play_count') int playCount;
+    @JsonKey(name : 'favorite_count') int favoriteCount;
+    @JsonKey(name : 'comment_count') int commentCount;
+    @JsonKey(name : 'download_count') int downloadCount;
+    @JsonKey(name : 'play_size_32') int playSize32;
+    @JsonKey(name : 'play_size_64') int playSize64;
+    @JsonKey(name : 'play_size_64_m4a') int playSize64M4a;
+    @JsonKey(name : 'play_size_24_m4a') int playSize24M4a;
+    @JsonKey(name : 'play_size_amr') int playSizeAmr;
+    @JsonKey(name : 'can_download') bool canDownload;
+    @JsonKey(name : 'download_size') num downloadSize;
+    // ignore: non_constant_identifier_names
+    SubordinatedAlbum subordinated_album;
+    num source;
+    @JsonKey(name : 'updated_at') num updatedAt;
+    @JsonKey(name : 'created_at') num createdAt;
+    @JsonKey(name : 'order_num') int orderNum;
+    
+    factory Track.fromJson(Map<String,dynamic> json) => _$TrackFromJson(json);
+    Map<String, dynamic> toJson() => _$TrackToJson(this);
 }

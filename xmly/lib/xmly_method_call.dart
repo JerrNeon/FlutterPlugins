@@ -8,9 +8,11 @@ class Methods {
   static const basePostRequest = "basePostRequest";
   static const basePostRequestSync = "basePostRequestSync";
   static const initPlayer = "initPlayer";
+  static const isConnected = "isConnected";
   static const playList = "playList";
   static const addTracksToPlayList = "addTracksToPlayList";
   static const insertTracksToPlayListHead = "insertTracksToPlayListHead";
+  static const permutePlayList = "permutePlayList";
   static const getPlayList = "getPlayList";
   static const getPlayListSize = "getPlayListSize";
   static const play = "play";

@@ -131,6 +131,9 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                             ?: System.currentTimeMillis().toInt(), notification)
                     result.success(true)
                 }
+                Methods.isConnected -> {
+                    result.success(XmPlayerManager.getInstance(context).isConnected)
+                }
                 Methods.playList -> {
                     val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
                     val playIndex = call.argument<Int>(Arguments.playIndex)
@@ -161,6 +164,9 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     }
                     XmPlayerManager.getInstance(context).insertTracksToPlayListHead(list)
                     result.success(true)
+                }
+                Methods.permutePlayList -> {
+                    result.success(XmPlayerManager.getInstance(context).permutePlayList())
                 }
                 Methods.getPlayList -> {
                     val playList = XmPlayerManager.getInstance(context).playList

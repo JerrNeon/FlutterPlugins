@@ -214,6 +214,16 @@ class Xmly {
     }
   }
 
+  ///是否连接
+  Future<bool> isConnected() {
+    try {
+      return _channel.invokeMethod(Methods.isConnected);
+    } on Exception catch (e) {
+      log(e.toString(), error: e);
+      return Future.error(e);
+    }
+  }
+
   ///开始播放[list]中[playIndex]位置的数据
   Future playList({
     @required List<Track> list,
@@ -254,6 +264,16 @@ class Xmly {
     }
   }
 
+  ///颠倒播放列表
+  Future permutePlayList() {
+    try {
+      return _channel.invokeMethod(Methods.permutePlayList);
+    } on Exception catch (e) {
+      log(e.toString(), error: e);
+      return Future.error(e);
+    }
+  }
+
   ///获取播放列表
   Future<List<Track>> getPlayList() async {
     try {
@@ -277,9 +297,16 @@ class Xmly {
   }
 
   ///播放
-  Future play() {
+  Future play({int playIndex = -1}) {
     try {
-      return _channel.invokeMethod(Methods.play);
+      return _channel.invokeMethod(
+          Methods.play,
+          playIndex != -1
+              ? {
+                  Arguments.playIndex,
+                  playIndex,
+                }
+              : null);
     } on Exception catch (e) {
       log(e.toString(), error: e);
       return Future.error(e);
