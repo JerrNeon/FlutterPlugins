@@ -41,6 +41,7 @@ class Methods {
 }
 
 class Arguments {
+  static const method = "method";
   static const isDebug = "isDebug";
   static const AppKey = "AppKey";
   static const PackId = "PackId";

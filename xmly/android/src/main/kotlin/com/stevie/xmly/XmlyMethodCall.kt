@@ -50,6 +50,7 @@ object Methods {
 }
 
 object Arguments {
+    const val method = "method"
     const val isDebug = "isDebug"
     const val AppKey = "AppKey";
     const val PackId = "PackId";

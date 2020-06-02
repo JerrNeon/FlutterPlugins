@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:xmly_example/api_manager.dart';
 import 'package:xmly_example/models/index.dart';
+import 'package:xmly_example/route/album_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -33,7 +34,7 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         color: Color(0xf0f0f0),
         margin: EdgeInsets.only(top: 11),
-        child: FutureBuilder(
+        child: FutureBuilder<ColumnAlbumPageList>(
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
@@ -55,7 +56,10 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         Album album = list[index];
                         return GestureDetector(
-                          onTap: null,
+                          onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      AlbumDetailPage(albumId: album.id))),
                           child: Container(
                             height: 79,
                             color: Colors.white,

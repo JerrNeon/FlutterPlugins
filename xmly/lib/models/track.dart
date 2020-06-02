@@ -22,11 +22,11 @@ class Track {
     @JsonKey(name : 'favorite_count') int favoriteCount;
     @JsonKey(name : 'comment_count') int commentCount;
     @JsonKey(name : 'download_count') int downloadCount;
-    @JsonKey(name : 'play_size_32') int playSize32;
-    @JsonKey(name : 'play_size_64') int playSize64;
-    @JsonKey(name : 'play_size_64_m4a') int playSize64M4a;
-    @JsonKey(name : 'play_size_24_m4a') int playSize24M4a;
-    @JsonKey(name : 'play_size_amr') int playSizeAmr;
+    @JsonKey(name : 'play_size_32') dynamic playSize32;
+    @JsonKey(name : 'play_size_64') dynamic playSize64;
+    @JsonKey(name : 'play_size_64_m4a') dynamic playSize64M4a;
+    @JsonKey(name : 'play_size_24_m4a') dynamic playSize24M4a;
+    @JsonKey(name : 'play_size_amr') dynamic playSizeAmr;
     @JsonKey(name : 'can_download') bool canDownload;
     @JsonKey(name : 'download_size') num downloadSize;
     // ignore: non_constant_identifier_names

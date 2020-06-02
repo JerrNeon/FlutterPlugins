@@ -25,11 +25,11 @@ Track _$TrackFromJson(Map<String, dynamic> json) {
     ..favoriteCount = json['favorite_count'] as int
     ..commentCount = json['comment_count'] as int
     ..downloadCount = json['download_count'] as int
-    ..playSize32 = json['play_size_32'] as int
-    ..playSize64 = json['play_size_64'] as int
-    ..playSize64M4a = json['play_size_64_m4a'] as int
-    ..playSize24M4a = json['play_size_24_m4a'] as int
-    ..playSizeAmr = json['play_size_amr'] as int
+    ..playSize32 = json['play_size_32'] as dynamic
+    ..playSize64 = json['play_size_64'] as dynamic
+    ..playSize64M4a = json['play_size_64_m4a'] as dynamic
+    ..playSize24M4a = json['play_size_24_m4a'] as dynamic
+    ..playSizeAmr = json['play_size_amr'] as dynamic
     ..canDownload = json['can_download'] as bool
     ..downloadSize = json['download_size'] as num
     ..subordinated_album = json['subordinated_album'] == null
@@ -52,7 +52,7 @@ Map<String, dynamic> _$TrackToJson(Track instance) => <String, dynamic>{
       'cover_url_small': instance.coverUrlSmall,
       'cover_url_middle': instance.coverUrlMiddle,
       'cover_url_large': instance.coverUrlLarge,
-      'announcer': instance.announcer,
+      'announcer': instance.announcer.toJson(),
       'duration': instance.duration,
       'play_count': instance.playCount,
       'favorite_count': instance.favoriteCount,
@@ -65,7 +65,7 @@ Map<String, dynamic> _$TrackToJson(Track instance) => <String, dynamic>{
       'play_size_amr': instance.playSizeAmr,
       'can_download': instance.canDownload,
       'download_size': instance.downloadSize,
-      'subordinated_album': instance.subordinated_album,
+      'subordinated_album': instance.subordinated_album.toJson(),
       'source': instance.source,
       'updated_at': instance.updatedAt,
       'created_at': instance.createdAt,

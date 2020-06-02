@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -58,11 +59,14 @@ class Xmly {
     return _instance;
   }
 
-  static const MethodChannel _channel =
-      const MethodChannel('plugins.stevie/xmly');
+  static const CHANNEL_NAME = "plugins.stevie/xmly";
+  static const CHANNEL_NAME2 = "plugins.stevie/xmly2";
+  static const MethodChannel _channel = const MethodChannel(CHANNEL_NAME);
+  static const EventChannel _eventChannel = const EventChannel(CHANNEL_NAME2);
 
   Map<int, IConnectCallback> _connectCallbackMap;
   Map<int, IPlayStatusCallback> _playStatusCallbackMap;
+  StreamSubscription _playStatusStreamSubscription;
 
   ///是否显示日志
   static Future isDebug({bool isDebug = false}) {
@@ -277,9 +281,8 @@ class Xmly {
   ///获取播放列表
   Future<List<Track>> getPlayList() async {
     try {
-      List<Map<String, dynamic>> list = await _channel
-          .invokeListMethod(Methods.getPlayList) as List<Map<String, dynamic>>;
-      return list.map((e) => Track.fromJson(e)).toList();
+      List<String> list = await _channel.invokeListMethod(Methods.getPlayList);
+      return list.map((e) => Track.fromJson(json.decode(e))).toList();
     } on Exception catch (e) {
       log(e.toString(), error: e);
       return Future.error(e);
@@ -463,10 +466,10 @@ class Xmly {
   ///获取当前的正在播放的声音信息
   Future<Track> getCurrSound() async {
     try {
-      Map<int, HashMap<String, dynamic>> map =
-          await _channel.invokeMethod(Methods.getCurrSound);
-      if (map.containsKey(0)) {
-        return Track.fromJson(map[0]);
+      Map<int, String> map =
+          await _channel.invokeMapMethod(Methods.getCurrSound);
+      if (map != null && map.containsKey(0)) {
+        return Track.fromJson(json.decode(map[0]));
       }
       return Future.value();
     } on Exception catch (e) {
@@ -540,49 +543,54 @@ class Xmly {
       _playStatusCallbackMap ??= HashMap();
       int index = _playStatusCallbackMap.length;
       _playStatusCallbackMap[index] = callback;
-      Map<int, dynamic> map =
-          await _channel.invokeMethod(Methods.addPlayerStatusListener, {
+      _playStatusStreamSubscription = _eventChannel.receiveBroadcastStream({
+        Arguments.method: Methods.addPlayerStatusListener,
         Arguments.listenerIndex: index,
-      });
-      map.forEach((key, value) {
-        switch (key) {
-          case 0:
-            callback.onPlayStart?.call();
-            break;
-          case 1:
-            callback.onSoundSwitch?.call();
-            break;
-          case 2:
-            callback.onPlayProgress?.call(value);
-            break;
-          case 3:
-            callback.onPlayPause?.call();
-            break;
-          case 4:
-            callback.onBufferProgress?.call(value);
-            break;
-          case 5:
-            callback.onPlayStop?.call();
-            break;
-          case 6:
-            callback.onBufferingStart?.call();
-            break;
-          case 7:
-            callback.onSoundPlayComplete?.call();
-            break;
-          case 8:
-            callback.onError?.call(value);
-            break;
-          case 9:
-            callback.onSoundPrepared?.call();
-            break;
-          case 10:
-            callback.onBufferingStop?.call();
-            break;
-          default:
-        }
-      });
-      return;
+      }).listen(
+        (event) {
+          event.forEach((key, value) {
+            switch (key) {
+              case 0:
+                callback.onPlayStart?.call();
+                break;
+              case 1:
+                callback.onSoundSwitch?.call();
+                break;
+              case 2:
+                callback.onPlayProgress?.call(value);
+                break;
+              case 3:
+                callback.onPlayPause?.call();
+                break;
+              case 4:
+                callback.onBufferProgress?.call(value);
+                break;
+              case 5:
+                callback.onPlayStop?.call();
+                break;
+              case 6:
+                callback.onBufferingStart?.call();
+                break;
+              case 7:
+                callback.onSoundPlayComplete?.call();
+                break;
+              case 8:
+                callback.onError?.call(value);
+                break;
+              case 9:
+                callback.onSoundPrepared?.call();
+                break;
+              case 10:
+                callback.onBufferingStop?.call();
+                break;
+              default:
+            }
+          });
+        },
+        onError: (error) {},
+        cancelOnError: true,
+      );
+      return Future.value();
     } on Exception catch (e) {
       log(e.toString(), error: e);
       return Future.error(e);
@@ -603,9 +611,7 @@ class Xmly {
         });
         if (index != -1) {
           _playStatusCallbackMap.remove(index);
-          return _channel.invokeMethod(Methods.removePlayerStatusListener, {
-            Arguments.listenerIndex: index,
-          });
+          _playStatusStreamSubscription?.cancel();
         }
       }
       return Future.value();

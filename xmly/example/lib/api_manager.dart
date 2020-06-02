@@ -56,4 +56,36 @@ class ApiManager {
     });
     return ColumnAlbumPageList.fromJson(json.decode(jsonStr));
   }
+
+  ///多筛选条件搜索专辑
+  Future<AlbumPageList> getSearchAlbumList({
+    @required int id, //专辑ID
+    int page = 1,
+    int count = 1,
+  }) async {
+    String jsonStr = await Xmly()
+        .baseGetRequest(url: ApiConfig.GET_SEARCHED_ALBUMS, params: {
+      "id": id.toString(),
+      "page": page.toString(),
+      "count": count.toString(),
+    });
+    return AlbumPageList.fromJson(json.decode(jsonStr));
+  }
+
+  ///专辑浏览
+  Future<TrackPageList> getTracks({
+    @required int albumId, //专辑ID
+    String sort = "asc",
+    int page = 1,
+    int count = 200,
+  }) async {
+    String jsonStr =
+        await Xmly().baseGetRequest(url: ApiConfig.GET_TRACKS, params: {
+      "album_id": albumId.toString(),
+      "sort": sort,
+      "page": page.toString(),
+      "count": count.toString(),
+    });
+    return TrackPageList.fromJson(json.decode(jsonStr));
+  }
 }

@@ -3,15 +3,12 @@ package com.stevie.xmly
 import android.content.Context
 import androidx.annotation.NonNull
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.stevie.xmly.Data.connectedListenerMap
-import com.stevie.xmly.Data.playerStatusListenerMap
 import com.ximalaya.ting.android.opensdk.constants.ConstantsOpenSdk
 import com.ximalaya.ting.android.opensdk.datatrasfer.CommonRequest
 import com.ximalaya.ting.android.opensdk.datatrasfer.IDataCallBack
 import com.ximalaya.ting.android.opensdk.datatrasfer.XimalayaResponse
 import com.ximalaya.ting.android.opensdk.httputil.XimalayaException
-import com.ximalaya.ting.android.opensdk.model.PlayableModel
 import com.ximalaya.ting.android.opensdk.model.live.radio.Radio
 import com.ximalaya.ting.android.opensdk.model.live.schedule.Schedule
 import com.ximalaya.ting.android.opensdk.model.track.Track
@@ -19,9 +16,7 @@ import com.ximalaya.ting.android.opensdk.player.XmPlayerManager
 import com.ximalaya.ting.android.opensdk.player.appnotification.NotificationColorUtils
 import com.ximalaya.ting.android.opensdk.player.appnotification.XmNotificationCreater
 import com.ximalaya.ting.android.opensdk.player.constants.PlayerConstants
-import com.ximalaya.ting.android.opensdk.player.service.IXmPlayerStatusListener
 import com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl
-import com.ximalaya.ting.android.opensdk.player.service.XmPlayerException
 import com.ximalaya.ting.android.opensdk.util.BaseUtil
 import com.ximalaya.ting.android.player.XMediaPlayerConstants
 import io.flutter.plugin.common.MethodCall
@@ -137,31 +132,22 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                 Methods.playList -> {
                     val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
                     val playIndex = call.argument<Int>(Arguments.playIndex)
-                    val list = mutableListOf<Track>()
                     val gson = Gson()
-                    playList?.asIterable()?.forEach {
-                        list.add(gson.fromJson(gson.toJson(it), Track::class.java))
-                    }
+                    val list = playList?.map { gson.fromJson(gson.toJson(it), Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).playList(list, playIndex ?: 0)
                     result.success(true)
                 }
                 Methods.addTracksToPlayList -> {
                     val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
-                    val list = mutableListOf<Track>()
                     val gson = Gson()
-                    playList?.asIterable()?.forEach {
-                        list.add(gson.fromJson(gson.toJson(it), Track::class.java))
-                    }
+                    val list = playList?.map { gson.fromJson(gson.toJson(it), Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).addTracksToPlayList(list)
                     result.success(true)
                 }
                 Methods.insertTracksToPlayListHead -> {
                     val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
-                    val list = mutableListOf<Track>()
                     val gson = Gson()
-                    playList?.asIterable()?.forEach {
-                        list.add(gson.fromJson(gson.toJson(it), Track::class.java))
-                    }
+                    val list = playList?.map { gson.fromJson(gson.toJson(it), Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).insertTracksToPlayListHead(list)
                     result.success(true)
                 }
@@ -171,7 +157,7 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                 Methods.getPlayList -> {
                     val playList = XmPlayerManager.getInstance(context).playList
                     val gson = Gson()
-                    val playStrList = playList.map { gson.fromJson<HashMap<String, Any?>>(gson.toJson(it), object : TypeToken<HashMap<String, Any?>>() {}.type) }.toList()
+                    val playStrList = playList.map { gson.toJson(it) }.toList()
                     result.success(playStrList)
                 }
                 Methods.getPlayListSize -> {
@@ -242,19 +228,23 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                 }
                 Methods.getCurrSound -> {
                     val gson = Gson()
-                    val map = hashMapOf<Int, HashMap<String, Any?>>()
+                    val map = hashMapOf<Int, String>()
                     when (val playableModel = XmPlayerManager.getInstance(context).currSound) {
                         is Track -> {
-                            map[0] = gson.fromJson(gson.toJson(playableModel), object : TypeToken<HashMap<String, Any?>>() {}.type)
+                            map[0] = gson.toJson(playableModel)
                         }
                         is Radio -> {
-                            map[1] = gson.fromJson(gson.toJson(playableModel), object : TypeToken<HashMap<String, Any?>>() {}.type)
+                            map[1] = gson.toJson(playableModel)
                         }
                         is Schedule -> {
-                            map[2] = gson.fromJson(gson.toJson(playableModel), object : TypeToken<HashMap<String, Any?>>() {}.type)
+                            map[2] = gson.toJson(playableModel)
                         }
                     }
-                    result.success(map)
+                    if (map.size != 0) {
+                        result.success(map)
+                    } else {
+                        result.success(null)
+                    }
                 }
                 Methods.getCurrPlayType -> {
                     result.success(XmPlayerManager.getInstance(context).currPlayType)
@@ -277,22 +267,7 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                             XmPlayerManager.getInstance(context).removeOnConnectedListerner(it[index])
                         }
                     }
-                }
-                Methods.addPlayerStatusListener -> {
-                    val index = call.argument<Int>(Arguments.listenerIndex) ?: 0
-                    val playerStatusListener = PlayerStatusListenerIml(result)
-                    if (playerStatusListenerMap == null)
-                        playerStatusListenerMap = hashMapOf()
-                    playerStatusListenerMap!![index] = playerStatusListener
-                    XmPlayerManager.getInstance(context).addPlayerStatusListener(playerStatusListener)
-                }
-                Methods.removePlayerStatusListener -> {
-                    val index = call.argument<Int>(Arguments.listenerIndex) ?: 0
-                    playerStatusListenerMap?.let {
-                        if (it.containsKey(index)) {
-                            XmPlayerManager.getInstance(context).removePlayerStatusListener(it[index])
-                        }
-                    }
+                    result.success(true)
                 }
                 Methods.pausePlayInMillis -> {
                     val mills = call.argument<Long>(Arguments.pausePlayInMillis) ?: 0
@@ -317,61 +292,3 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
 }
 
 data class XmResponse(val json: String?) : XimalayaResponse()
-
-class PlayerStatusListenerIml(private val result: MethodChannel.Result) : IXmPlayerStatusListener {
-    override fun onPlayStart() {
-        val map = hashMapOf(0 to 0)
-        result.success(map)
-    }
-
-    override fun onSoundSwitch(p0: PlayableModel?, p1: PlayableModel?) {
-        val map = hashMapOf(1 to 1)
-        result.success(map)
-    }
-
-    override fun onPlayProgress(currPos: Int, duration: Int) {
-        val map = hashMapOf(2 to currPos * 1f / duration)
-        result.success(map)
-    }
-
-    override fun onPlayPause() {
-        val map = hashMapOf(3 to 3)
-        result.success(map)
-    }
-
-    override fun onBufferProgress(progress: Int) {
-        val map = hashMapOf(4 to progress)
-        result.success(map)
-    }
-
-    override fun onPlayStop() {
-        val map = hashMapOf(5 to 5)
-        result.success(map)
-    }
-
-    override fun onBufferingStart() {
-        val map = hashMapOf(6 to 6)
-        result.success(map)
-    }
-
-    override fun onSoundPlayComplete() {
-        val map = hashMapOf(7 to 7)
-        result.success(map)
-    }
-
-    override fun onError(e: XmPlayerException?): Boolean {
-        val map = hashMapOf(8 to e.toString())
-        result.success(map)
-        return false
-    }
-
-    override fun onSoundPrepared() {
-        val map = hashMapOf(9 to 9)
-        result.success(map)
-    }
-
-    override fun onBufferingStop() {
-        val map = hashMapOf(10 to 10)
-        result.success(map)
-    }
-}

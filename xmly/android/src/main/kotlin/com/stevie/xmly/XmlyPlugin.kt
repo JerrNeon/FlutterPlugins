@@ -4,11 +4,7 @@ import android.content.Context
 import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.*
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 /** XmlyPlugin */
@@ -17,7 +13,8 @@ public class XmlyPlugin : FlutterPlugin {
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private lateinit var channel: MethodChannel
+    private lateinit var methodChannel: MethodChannel
+    private lateinit var eventChannel: EventChannel
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
     // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -30,6 +27,7 @@ public class XmlyPlugin : FlutterPlugin {
     // in the same class.
     companion object {
         const val CHANNEL_NAME = "plugins.stevie/xmly"
+        const val CHANNEL_NAME2 = "plugins.stevie/xmly2"
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
@@ -47,12 +45,17 @@ public class XmlyPlugin : FlutterPlugin {
     }
 
     private fun setupChannel(messenger: BinaryMessenger, context: Context) {
-        channel = MethodChannel(messenger, CHANNEL_NAME)
-        val handler = MethodCallHandlerImpl(context)
-        channel.setMethodCallHandler(handler)
+        methodChannel = MethodChannel(messenger, CHANNEL_NAME)
+        val methodCallHandler = MethodCallHandlerImpl(context)
+        methodChannel.setMethodCallHandler(methodCallHandler)
+
+        eventChannel = EventChannel(messenger, CHANNEL_NAME2)
+        val streamHandler = StreamHandlerIml(context)
+        eventChannel.setStreamHandler(streamHandler)
     }
 
     private fun teardownChannel() {
-        channel.setMethodCallHandler(null)
+        methodChannel.setMethodCallHandler(null)
+        eventChannel.setStreamHandler(null)
     }
 }
