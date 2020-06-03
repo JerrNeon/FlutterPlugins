@@ -42,9 +42,7 @@ object Methods {
     const val getCurrSound = "getCurrSound"
     const val getCurrPlayType = "getCurrPlayType"
     const val addOnConnectedListener = "addOnConnectedListener"
-    const val removeOnConnectedListener = "removeOnConnectedListener"
     const val addPlayerStatusListener = "addPlayerStatusListener"
-    const val removePlayerStatusListener = "removePlayerStatusListener"
     const val pausePlayInMillis = "pausePlayInMillis"
     const val release = "release"
 }

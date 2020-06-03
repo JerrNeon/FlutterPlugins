@@ -20,8 +20,18 @@ class _HomePageState extends State<HomePage> {
     _initFuture();
   }
 
-  _initFuture() async {
-    _future = ApiManager().getColumnList(id: 6880);
+  _initFuture({bool isInit = true}) {
+    if (isInit) {
+      //这里延迟1秒初始化future是因为[Xmly.init]需要一定时间
+      Future.delayed(Duration(seconds: 1)).then((value) {
+        _future = ApiManager().getColumnList(id: 6880);
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    } else {
+      _future = ApiManager().getColumnList(id: 6880);
+    }
   }
 
   @override
@@ -43,7 +53,7 @@ class _HomePageState extends State<HomePage> {
                     alignment: Alignment.center,
                     child: GestureDetector(
                       onTap: () {
-                        _initFuture();
+                        _initFuture(isInit: false);
                         setState(() {});
                       },
                       child: Text("load failure,click retry"),

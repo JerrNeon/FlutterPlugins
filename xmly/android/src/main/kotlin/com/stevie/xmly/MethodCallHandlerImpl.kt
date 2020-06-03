@@ -1,9 +1,9 @@
 package com.stevie.xmly
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.NonNull
 import com.google.gson.Gson
-import com.stevie.xmly.Data.connectedListenerMap
 import com.ximalaya.ting.android.opensdk.constants.ConstantsOpenSdk
 import com.ximalaya.ting.android.opensdk.datatrasfer.CommonRequest
 import com.ximalaya.ting.android.opensdk.datatrasfer.IDataCallBack
@@ -130,24 +130,24 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     result.success(XmPlayerManager.getInstance(context).isConnected)
                 }
                 Methods.playList -> {
-                    val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
+                    val playList = call.argument<List<String>>(Arguments.playList)
                     val playIndex = call.argument<Int>(Arguments.playIndex)
                     val gson = Gson()
-                    val list = playList?.map { gson.fromJson(gson.toJson(it), Track::class.java) }?.toList()
+                    val list = playList?.map { gson.fromJson(it, Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).playList(list, playIndex ?: 0)
                     result.success(true)
                 }
                 Methods.addTracksToPlayList -> {
-                    val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
+                    val playList = call.argument<List<String>>(Arguments.playList)
                     val gson = Gson()
-                    val list = playList?.map { gson.fromJson(gson.toJson(it), Track::class.java) }?.toList()
+                    val list = playList?.map { gson.fromJson(it, Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).addTracksToPlayList(list)
                     result.success(true)
                 }
                 Methods.insertTracksToPlayListHead -> {
-                    val playList = call.argument<List<Map<String, Any>>>(Arguments.playList)
+                    val playList = call.argument<List<String>>(Arguments.playList)
                     val gson = Gson()
-                    val list = playList?.map { gson.fromJson(gson.toJson(it), Track::class.java) }?.toList()
+                    val list = playList?.map { gson.fromJson(it, Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).insertTracksToPlayListHead(list)
                     result.success(true)
                 }
@@ -248,26 +248,6 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                 }
                 Methods.getCurrPlayType -> {
                     result.success(XmPlayerManager.getInstance(context).currPlayType)
-                }
-                Methods.addOnConnectedListener -> {
-                    val index = call.argument<Int>(Arguments.listenerIndex) ?: 0
-                    if (connectedListenerMap == null)
-                        connectedListenerMap = hashMapOf()
-                    XmPlayerManager.getInstance(context).addOnConnectedListerner(object : XmPlayerManager.IConnectListener {
-                        override fun onConnected() {
-                            connectedListenerMap!![index] = this
-                            result.success(true)
-                        }
-                    })
-                }
-                Methods.removeOnConnectedListener -> {
-                    val index = call.argument<Int>(Arguments.listenerIndex) ?: 0
-                    connectedListenerMap?.let {
-                        if (it.containsKey(index)) {
-                            XmPlayerManager.getInstance(context).removeOnConnectedListerner(it[index])
-                        }
-                    }
-                    result.success(true)
                 }
                 Methods.pausePlayInMillis -> {
                     val mills = call.argument<Long>(Arguments.pausePlayInMillis) ?: 0

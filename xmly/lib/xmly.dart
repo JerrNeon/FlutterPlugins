@@ -66,6 +66,7 @@ class Xmly {
 
   Map<int, IConnectCallback> _connectCallbackMap;
   Map<int, IPlayStatusCallback> _playStatusCallbackMap;
+  StreamSubscription _connectStreamSubscription;
   StreamSubscription _playStatusStreamSubscription;
 
   ///是否显示日志
@@ -235,7 +236,7 @@ class Xmly {
   }) {
     try {
       return _channel.invokeMethod(Methods.playList, {
-        Arguments.playList: list.map((e) => e.toJson()).toList(),
+        Arguments.playList: list.map((e) => json.encode(e.toJson())).toList(),
         Arguments.playIndex: playIndex,
       });
     } on Exception catch (e) {
@@ -248,7 +249,7 @@ class Xmly {
   Future addTracksToPlayList({@required List<Track> list}) {
     try {
       return _channel.invokeMethod(Methods.addTracksToPlayList, {
-        Arguments.playList: list.map((e) => e.toJson()).toList(),
+        Arguments.playList: list.map((e) => json.encode(e.toJson())).toList(),
       });
     } on Exception catch (e) {
       log(e.toString(), error: e);
@@ -260,7 +261,7 @@ class Xmly {
   Future insertTracksToPlayListHead({@required List<Track> list}) {
     try {
       return _channel.invokeMethod(Methods.insertTracksToPlayListHead, {
-        Arguments.playList: list.map((e) => e.toJson()).toList(),
+        Arguments.playList: list.map((e) => json.encode(e.toJson())).toList(),
       });
     } on Exception catch (e) {
       log(e.toString(), error: e);
@@ -490,20 +491,23 @@ class Xmly {
   }
 
   ///添加连接监听
-  Future<bool> addOnConnectedListener(IConnectCallback callback) async {
+  Future addOnConnectedListener(IConnectCallback callback) async {
     try {
       assert(callback != null);
       _connectCallbackMap ??= HashMap();
       int index = _connectCallbackMap.length;
       _connectCallbackMap[index] = callback;
-      bool result =
-          await _channel.invokeMethod(Methods.addOnConnectedListener, {
+      _connectStreamSubscription = _eventChannel.receiveBroadcastStream({
+        Arguments.method: Methods.addOnConnectedListener,
         Arguments.listenerIndex: index,
-      });
-      if (result) {
-        callback.call();
-      }
-      return result;
+      }).listen(
+        (event) {
+          callback.call();
+        },
+        onError: (error) {},
+        cancelOnError: true,
+      );
+      return Future.value();
     } on Exception catch (e) {
       log(e.toString(), error: e);
       return Future.error(e);
@@ -524,9 +528,7 @@ class Xmly {
         });
         if (index != -1) {
           _connectCallbackMap.remove(index);
-          return _channel.invokeMethod(Methods.removeOnConnectedListener, {
-            Arguments.listenerIndex: index,
-          });
+          _connectStreamSubscription?.cancel();
         }
       }
       return Future.value();

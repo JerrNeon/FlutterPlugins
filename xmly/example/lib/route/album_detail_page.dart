@@ -47,17 +47,22 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     _trackFuture = ApiManager().getTracks(albumId: albumId);
   }
 
-  _initListener() {
-    _iPlayStatusCallback ??= IPlayStatusCallback();
-    _iPlayStatusCallback.onPlayStart = () => print("xmly -> onPlayStart");
-    _iPlayStatusCallback.onPlayPause = () => print("xmly -> onPlayPause");
-    _iPlayStatusCallback.onBufferProgress =
-        (progress) => print("xmly -> onBufferProgress $progress");
-    _iPlayStatusCallback.onPlayProgress =
-        (progress) => print("xmly -> onPlayProgress $progress");
-    _iPlayStatusCallback.onSoundSwitch =
-        () => _getCurrPlayTrackId(isInit: false);
-    Xmly().addPlayerStatusListener(_iPlayStatusCallback);
+  _initListener() async {
+    bool isConnected = await Xmly().isConnected();
+    if (isConnected) {
+      _iPlayStatusCallback ??= IPlayStatusCallback();
+      _iPlayStatusCallback.onPlayStart = () => print("xmly -> onPlayStart");
+      _iPlayStatusCallback.onPlayPause = () => print("xmly -> onPlayPause");
+      _iPlayStatusCallback.onBufferProgress =
+          (progress) => print("xmly -> onBufferProgress $progress");
+      _iPlayStatusCallback.onPlayProgress =
+          (progress) => print("xmly -> onPlayProgress $progress");
+      _iPlayStatusCallback.onSoundSwitch = () {
+        _getCurrPlayTrackId(isInit: false);
+        print("xmly -> onSoundSwitch");
+      };
+      Xmly().addPlayerStatusListener(_iPlayStatusCallback);
+    }
   }
 
   _getCurrPlayTrackId({bool isInit = true}) async {
@@ -339,15 +344,17 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     if (isConnected) {
       await xmly.playList(list: list, playIndex: playIndex);
     } else {
+      _iConnectCallback = () async {
+        await xmly.removeOnConnectedListener(_iConnectCallback);
+        _initListener();
+        await xmly.playList(list: list, playIndex: playIndex);
+        _getCurrPlayTrackId(isInit: false);
+      };
+      await xmly.addOnConnectedListener(_iConnectCallback);
       await xmly.initPlayer(
         notificationId: DateTime.now().millisecond,
         notificationClassName: "com.stevie.xmly_example.MainActivity",
       );
-      _iConnectCallback = () async {
-        await xmly.playList(list: list, playIndex: playIndex);
-        xmly.removeOnConnectedListener(_iConnectCallback);
-      };
-      await xmly.addOnConnectedListener(_iConnectCallback);
     }
   }
 }
