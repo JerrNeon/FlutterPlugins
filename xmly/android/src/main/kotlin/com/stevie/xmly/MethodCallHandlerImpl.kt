@@ -217,8 +217,9 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     result.success(XmPlayerManager.getInstance(context).playCurrPositon)
                 }
                 Methods.seekToByPercent -> {
-                    val seekPercent = call.argument<Float>(Arguments.seekPercent) ?: 0f
-                    XmPlayerManager.getInstance(context).seekToByPercent(seekPercent)
+                    val seekPercent: Double? = call.argument<Double>(Arguments.seekPercent)
+                    XmPlayerManager.getInstance(context).seekToByPercent(seekPercent?.toFloat()
+                            ?: 0f)
                     result.success(true)
                 }
                 Methods.seekTo -> {

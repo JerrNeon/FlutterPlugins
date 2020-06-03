@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:xmly/xmly_index.dart';
 import 'package:xmly_example/api_manager.dart';
 import 'package:xmly_example/models/index.dart';
+import 'package:xmly_example/route/play_page.dart';
 
 class AlbumDetailPage extends StatefulWidget {
   final int albumId;
@@ -51,12 +52,6 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     bool isConnected = await Xmly().isConnected();
     if (isConnected) {
       _iPlayStatusCallback ??= IPlayStatusCallback();
-      _iPlayStatusCallback.onPlayStart = () => print("xmly -> onPlayStart");
-      _iPlayStatusCallback.onPlayPause = () => print("xmly -> onPlayPause");
-      _iPlayStatusCallback.onBufferProgress =
-          (progress) => print("xmly -> onBufferProgress $progress");
-      _iPlayStatusCallback.onPlayProgress =
-          (progress) => print("xmly -> onPlayProgress $progress");
       _iPlayStatusCallback.onSoundSwitch = () {
         _getCurrPlayTrackId(isInit: false);
         print("xmly -> onSoundSwitch");
@@ -343,12 +338,16 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     bool isConnected = await xmly.isConnected();
     if (isConnected) {
       await xmly.playList(list: list, playIndex: playIndex);
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => PlayPage()));
     } else {
       _iConnectCallback = () async {
         await xmly.removeOnConnectedListener(_iConnectCallback);
         _initListener();
         await xmly.playList(list: list, playIndex: playIndex);
         _getCurrPlayTrackId(isInit: false);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => PlayPage()));
       };
       await xmly.addOnConnectedListener(_iConnectCallback);
       await xmly.initPlayer(
