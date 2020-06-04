@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 import 'package:xmly/xmly.dart';
 import 'package:xmly_example/route/home_page.dart';
@@ -16,14 +15,15 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool isInitComplete = false;
 
   @override
   void initState() {
     super.initState();
-    initXmly();
+    _initXmly();
   }
 
-  Future initXmly() async {
+  _initXmly() async {
     await Xmly.isDebug(isDebug: !isRelease);
     await Xmly.init(
       appKey: "857b7fc3d1ab3a0388f1c27a63f3ef85",
@@ -32,13 +32,31 @@ class _MyAppState extends State<MyApp> {
     );
     await Xmly.useHttps(useHttps: true);
     await Xmly.isTargetSDKVersion24More(isTargetSDKVersion24More: true);
+    if (mounted) {
+      setState(() {
+        isInitComplete = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: isInitComplete ? HomePage() : LoadingWidget(),
+    );
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(backgroundColor: Color(0xf0f0f0)),
+      body: Container(
+        color: Color(0xf0f0f0),
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
