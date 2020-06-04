@@ -1,8 +1,8 @@
 name: xmly
-description: A new flutter plugin project.
+description: xmly sdk.
 version: 0.0.1
-author:
-homepage:
+author: Stevie
+homepage: https://github.com/JerrNeon
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
