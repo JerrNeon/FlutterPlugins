@@ -357,10 +357,10 @@ class Xmly {
     }
   }
 
-   ///获取播放模式
-  Future<PlayMode> getPlayMode() {
+  ///获取播放模式
+  Future<PlayMode> getPlayMode() async {
     try {
-      int index = _channel.invokeMethod(Methods.getPlayMode);
+      int index = await _channel.invokeMethod(Methods.getPlayMode);
       return PlayMode.values[index];
     } on Exception catch (e) {
       log(e.toString(), error: e);
