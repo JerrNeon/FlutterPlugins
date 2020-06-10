@@ -1,7 +1,6 @@
 package com.stevie.xmly
 
 import android.content.Context
-import android.util.Log
 import androidx.annotation.NonNull
 import com.google.gson.Gson
 import com.ximalaya.ting.android.opensdk.constants.ConstantsOpenSdk
@@ -187,6 +186,9 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                 Methods.playNext -> {
                     XmPlayerManager.getInstance(context).playNext()
                     result.success(true)
+                }
+                Methods.getPlayMode -> {
+                    result.success(XmPlayerManager.getInstance(context).playMode.ordinal)
                 }
                 Methods.setPlayMode -> {
                     val playMode = call.argument<Int>(Arguments.playMode)

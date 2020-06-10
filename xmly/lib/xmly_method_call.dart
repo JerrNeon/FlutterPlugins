@@ -20,6 +20,7 @@ class Methods {
   static const stop = "stop";
   static const playPre = "playPre";
   static const playNext = "playNext";
+  static const getPlayMode = "getPlayMode";
   static const setPlayMode = "setPlayMode";
   static const getPlayerStatus = "getPlayerStatus";
   static const isPlaying = "isPlaying";

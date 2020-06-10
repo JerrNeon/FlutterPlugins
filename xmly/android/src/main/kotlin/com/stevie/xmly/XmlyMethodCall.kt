@@ -29,6 +29,7 @@ object Methods {
     const val stop = "stop"
     const val playPre = "playPre"
     const val playNext = "playNext"
+    const val getPlayMode = "getPlayMode";
     const val setPlayMode = "setPlayMode"
     const val getPlayerStatus = "getPlayerStatus"
     const val isPlaying = "isPlaying"
