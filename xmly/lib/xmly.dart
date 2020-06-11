@@ -66,8 +66,8 @@ class Xmly {
 
   Map<int, IConnectCallback> _connectCallbackMap;
   Map<int, IPlayStatusCallback> _playStatusCallbackMap;
-  StreamSubscription _connectStreamSubscription;
-  StreamSubscription _playStatusStreamSubscription;
+  Map<int, StreamSubscription> _connectStreamSubscriptionMap;
+  Map<int, StreamSubscription> _playStatusStreamSubscriptionMap;
 
   ///是否显示日志
   static Future isDebug({bool isDebug = false}) {
@@ -307,8 +307,7 @@ class Xmly {
           Methods.play,
           playIndex != -1
               ? {
-                  Arguments.playIndex,
-                  playIndex,
+                  Arguments.playIndex: playIndex,
                 }
               : null);
     } on Exception catch (e) {
@@ -506,9 +505,11 @@ class Xmly {
     try {
       assert(callback != null);
       _connectCallbackMap ??= HashMap();
+      _connectStreamSubscriptionMap ??= HashMap();
       int index = _connectCallbackMap.length;
       _connectCallbackMap[index] = callback;
-      _connectStreamSubscription = _eventChannel.receiveBroadcastStream({
+      _connectStreamSubscriptionMap[index] =
+          _eventChannel.receiveBroadcastStream({
         Arguments.method: Methods.addOnConnectedListener,
         Arguments.listenerIndex: index,
       }).listen(
@@ -539,7 +540,8 @@ class Xmly {
         });
         if (index != -1) {
           _connectCallbackMap.remove(index);
-          _connectStreamSubscription?.cancel();
+          _connectStreamSubscriptionMap[index]?.cancel();
+          _connectStreamSubscriptionMap.remove(index);
         }
       }
       return Future.value();
@@ -556,7 +558,8 @@ class Xmly {
       _playStatusCallbackMap ??= HashMap();
       int index = _playStatusCallbackMap.length;
       _playStatusCallbackMap[index] = callback;
-      _playStatusStreamSubscription = _eventChannel.receiveBroadcastStream({
+      _playStatusStreamSubscriptionMap[index] =
+          _eventChannel.receiveBroadcastStream({
         Arguments.method: Methods.addPlayerStatusListener,
         Arguments.listenerIndex: index,
       }).listen(
@@ -624,7 +627,8 @@ class Xmly {
         });
         if (index != -1) {
           _playStatusCallbackMap.remove(index);
-          _playStatusStreamSubscription?.cancel();
+          _playStatusStreamSubscriptionMap[index]?.cancel();
+          _playStatusStreamSubscriptionMap.remove(index);
         }
       }
       return Future.value();
@@ -640,7 +644,7 @@ class Xmly {
   Future pausePlayInMillis(num timeMillis) {
     try {
       return _channel.invokeMethod(Methods.pausePlayInMillis, {
-        Arguments.pausePlayInMillis: timeMillis,
+        Arguments.pausePlayInMillis: timeMillis.toString(),
       });
     } on Exception catch (e) {
       log(e.toString(), error: e);

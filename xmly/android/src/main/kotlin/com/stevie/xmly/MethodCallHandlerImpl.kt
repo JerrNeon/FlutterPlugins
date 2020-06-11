@@ -253,7 +253,8 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     result.success(XmPlayerManager.getInstance(context).currPlayType)
                 }
                 Methods.pausePlayInMillis -> {
-                    val mills = call.argument<Long>(Arguments.pausePlayInMillis) ?: 0
+                    val mills = call.argument<String>(Arguments.pausePlayInMillis)?.toLongOrNull()
+                            ?: 0
                     XmPlayerManager.getInstance(context).pausePlayInMillis(mills)
                     result.success(true)
                 }
