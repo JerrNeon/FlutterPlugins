@@ -510,7 +510,7 @@ class Xmly {
       _connectCallbackMap[index] = callback;
       _connectStreamSubscriptionMap[index] =
           _eventChannel.receiveBroadcastStream({
-        Arguments.method: Methods.addOnConnectedListener,
+        Arguments.method: "${Methods.addOnConnectedListener}$index",
         Arguments.listenerIndex: index,
       }).listen(
         (event) {
@@ -561,7 +561,7 @@ class Xmly {
       _playStatusCallbackMap[index] = callback;
       _playStatusStreamSubscriptionMap[index] =
           _eventChannel.receiveBroadcastStream({
-        Arguments.method: Methods.addPlayerStatusListener,
+        Arguments.method: "${Methods.addPlayerStatusListener}$index",
         Arguments.listenerIndex: index,
       }).listen(
         (event) {
