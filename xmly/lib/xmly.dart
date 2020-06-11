@@ -540,7 +540,9 @@ class Xmly {
           }
         });
         if (index != -1) {
+          _connectStreamSubscription?.pause();
           _connectCallbackMap.remove(index);
+          _connectStreamSubscription?.resume();
           if (isCancel) {
             _connectStreamSubscription?.cancel();
             _connectStreamSubscription = null;
@@ -632,7 +634,9 @@ class Xmly {
           }
         });
         if (index != -1) {
+          _playStatusStreamSubscription?.pause();
           _playStatusCallbackMap.remove(index);
+          _playStatusStreamSubscription?.resume();
           if (isCancel) {
             _playStatusStreamSubscription?.cancel();
             _playStatusStreamSubscription = null;

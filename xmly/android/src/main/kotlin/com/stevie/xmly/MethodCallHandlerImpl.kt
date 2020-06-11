@@ -256,7 +256,6 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                 Methods.pausePlayInMillis -> {
                     val mills = call.argument<String>(Arguments.pausePlayInMillis)?.toLongOrNull()
                             ?: 0
-                    Log.i("flutter xmly", "pausePlayInMillis $mills")
                     XmPlayerManager.getInstance(context).pausePlayInMillis(mills)
                     result.success(true)
                 }
