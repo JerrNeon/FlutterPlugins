@@ -556,6 +556,7 @@ class Xmly {
     try {
       assert(callback != null);
       _playStatusCallbackMap ??= HashMap();
+      _playStatusStreamSubscriptionMap ??= HashMap();
       int index = _playStatusCallbackMap.length;
       _playStatusCallbackMap[index] = callback;
       _playStatusStreamSubscriptionMap[index] =
