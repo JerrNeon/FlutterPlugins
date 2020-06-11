@@ -18,27 +18,14 @@ class StreamHandlerIml(private val context: Context) : EventChannel.StreamHandle
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         try {
             if (arguments is Map<*, *>) {
-                val method = arguments[Arguments.method] as? String ?: ""
-                val index = arguments[Arguments.listenerIndex] as? Int ?: 0
-                if (method.contains(Methods.addOnConnectedListener)) {
-                    when (method) {
-                        "${Methods.addOnConnectedListener}$index" -> {
-                            if (Data.connectedListenerMap == null)
-                                Data.connectedListenerMap = hashMapOf()
-                            val connectListener = XmPlayerManager.IConnectListener { events?.success(true) }
-                            Data.connectedListenerMap!![index] = connectListener
-                            XmPlayerManager.getInstance(context).addOnConnectedListerner(connectListener)
-                        }
+                when (arguments[Arguments.method]) {
+                    Methods.addOnConnectedListener -> {
+                        Data.connectedListener = XmPlayerManager.IConnectListener { events?.success(true) }
+                        XmPlayerManager.getInstance(context).addOnConnectedListerner(Data.connectedListener)
                     }
-                } else if (method.contains(Methods.addPlayerStatusListener)) {
-                    when (method) {
-                        "${Methods.addPlayerStatusListener}$index" -> {
-                            val playerStatusListener = PlayerStatusListenerIml(events)
-                            if (Data.playerStatusListenerMap == null)
-                                Data.playerStatusListenerMap = hashMapOf()
-                            Data.playerStatusListenerMap!![index] = playerStatusListener
-                            XmPlayerManager.getInstance(context).addPlayerStatusListener(playerStatusListener)
-                        }
+                    Methods.addPlayerStatusListener -> {
+                        Data.playerStatusListener = PlayerStatusListenerIml(events)
+                        XmPlayerManager.getInstance(context).addPlayerStatusListener(Data.playerStatusListener)
                     }
                 }
             }
@@ -61,21 +48,15 @@ class StreamHandlerIml(private val context: Context) : EventChannel.StreamHandle
 
     override fun onCancel(arguments: Any?) {
         if (arguments is Map<*, *>) {
-            val method = arguments[Arguments.method] as? String ?: ""
-            val index = arguments[Arguments.listenerIndex] as? Int ?: 0
-            when (method) {
-                "${Methods.addOnConnectedListener}$index" -> {
-                    Data.connectedListenerMap?.let {
-                        if (it.containsKey(index)) {
-                            XmPlayerManager.getInstance(context).removeOnConnectedListerner(it[index])
-                        }
+            when (arguments[Arguments.method]) {
+                Methods.addOnConnectedListener -> {
+                    Data.connectedListener?.let {
+                        XmPlayerManager.getInstance(context).removeOnConnectedListerner(it)
                     }
                 }
-                "${Methods.addPlayerStatusListener}$index" -> {
-                    Data.playerStatusListenerMap?.let {
-                        if (it.containsKey(index)) {
-                            XmPlayerManager.getInstance(context).removePlayerStatusListener(it[index])
-                        }
+                Methods.addPlayerStatusListener -> {
+                    Data.playerStatusListener?.let {
+                        XmPlayerManager.getInstance(context).removePlayerStatusListener(it)
                     }
                 }
             }

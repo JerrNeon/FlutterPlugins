@@ -66,8 +66,8 @@ class Xmly {
 
   Map<int, IConnectCallback> _connectCallbackMap;
   Map<int, IPlayStatusCallback> _playStatusCallbackMap;
-  Map<int, StreamSubscription> _connectStreamSubscriptionMap;
-  Map<int, StreamSubscription> _playStatusStreamSubscriptionMap;
+  StreamSubscription _connectStreamSubscription;
+  StreamSubscription _playStatusStreamSubscription;
 
   ///是否显示日志
   static Future isDebug({bool isDebug = false}) {
@@ -505,16 +505,16 @@ class Xmly {
     try {
       assert(callback != null);
       _connectCallbackMap ??= HashMap();
-      _connectStreamSubscriptionMap ??= HashMap();
       int index = _connectCallbackMap.length;
       _connectCallbackMap[index] = callback;
-      _connectStreamSubscriptionMap[index] =
-          _eventChannel.receiveBroadcastStream({
-        Arguments.method: "${Methods.addOnConnectedListener}$index",
+      _connectStreamSubscription ??= _eventChannel.receiveBroadcastStream({
+        Arguments.method: Methods.addOnConnectedListener,
         Arguments.listenerIndex: index,
       }).listen(
         (event) {
-          callback.call();
+          _connectCallbackMap?.forEach((key, value) {
+            value.call();
+          });
         },
         onError: (error) {},
         cancelOnError: true,
@@ -527,7 +527,8 @@ class Xmly {
   }
 
   ///去除连接监听
-  Future removeOnConnectedListener(IConnectCallback callback) {
+  Future removeOnConnectedListener(IConnectCallback callback,
+      {bool isCancel = false}) {
     try {
       assert(callback != null);
       if (_connectCallbackMap != null &&
@@ -540,8 +541,10 @@ class Xmly {
         });
         if (index != -1) {
           _connectCallbackMap.remove(index);
-          _connectStreamSubscriptionMap[index]?.cancel();
-          _connectStreamSubscriptionMap.remove(index);
+          if (isCancel) {
+            _connectStreamSubscription?.cancel();
+            _connectStreamSubscription = null;
+          }
         }
       }
       return Future.value();
@@ -552,56 +555,57 @@ class Xmly {
   }
 
   ///添加播放状态监听
-  Future addPlayerStatusListener(IPlayStatusCallback callback) async {
+  Future addPlayerStatusListener(
+      IPlayStatusCallback iPlayStatusCallback) async {
     try {
-      assert(callback != null);
+      assert(iPlayStatusCallback != null);
       _playStatusCallbackMap ??= HashMap();
-      _playStatusStreamSubscriptionMap ??= HashMap();
       int index = _playStatusCallbackMap.length;
-      _playStatusCallbackMap[index] = callback;
-      _playStatusStreamSubscriptionMap[index] =
-          _eventChannel.receiveBroadcastStream({
-        Arguments.method: "${Methods.addPlayerStatusListener}$index",
+      _playStatusCallbackMap[index] = iPlayStatusCallback;
+      _playStatusStreamSubscription = _eventChannel.receiveBroadcastStream({
+        Arguments.method: Methods.addPlayerStatusListener,
         Arguments.listenerIndex: index,
       }).listen(
         (event) {
-          event.forEach((key, value) {
-            switch (key) {
-              case 0:
-                callback.onPlayStart?.call();
-                break;
-              case 1:
-                callback.onSoundSwitch?.call();
-                break;
-              case 2:
-                callback.onPlayProgress?.call(value);
-                break;
-              case 3:
-                callback.onPlayPause?.call();
-                break;
-              case 4:
-                callback.onBufferProgress?.call(value);
-                break;
-              case 5:
-                callback.onPlayStop?.call();
-                break;
-              case 6:
-                callback.onBufferingStart?.call();
-                break;
-              case 7:
-                callback.onSoundPlayComplete?.call();
-                break;
-              case 8:
-                callback.onError?.call(value);
-                break;
-              case 9:
-                callback.onSoundPrepared?.call();
-                break;
-              case 10:
-                callback.onBufferingStop?.call();
-                break;
-              default:
-            }
+          _playStatusCallbackMap.forEach((_, callback) {
+            event.forEach((key, value) {
+              switch (key) {
+                case 0:
+                  callback.onPlayStart?.call();
+                  break;
+                case 1:
+                  callback.onSoundSwitch?.call();
+                  break;
+                case 2:
+                  callback.onPlayProgress?.call(value);
+                  break;
+                case 3:
+                  callback.onPlayPause?.call();
+                  break;
+                case 4:
+                  callback.onBufferProgress?.call(value);
+                  break;
+                case 5:
+                  callback.onPlayStop?.call();
+                  break;
+                case 6:
+                  callback.onBufferingStart?.call();
+                  break;
+                case 7:
+                  callback.onSoundPlayComplete?.call();
+                  break;
+                case 8:
+                  callback.onError?.call(value);
+                  break;
+                case 9:
+                  callback.onSoundPrepared?.call();
+                  break;
+                case 10:
+                  callback.onBufferingStop?.call();
+                  break;
+                default:
+              }
+            });
           });
         },
         onError: (error) {},
@@ -615,21 +619,24 @@ class Xmly {
   }
 
   ///去除播放状态监听
-  Future removePlayerStatusListener(IPlayStatusCallback callback) {
+  Future removePlayerStatusListener(IPlayStatusCallback iPlayStatusCallback,
+      {bool isCancel = false}) {
     try {
-      assert(callback != null);
+      assert(iPlayStatusCallback != null);
       if (_playStatusCallbackMap != null &&
-          _playStatusCallbackMap.containsValue(callback)) {
+          _playStatusCallbackMap.containsValue(iPlayStatusCallback)) {
         int index = -1;
         _playStatusCallbackMap.forEach((key, value) {
-          if (value == callback) {
+          if (value == iPlayStatusCallback) {
             index = key;
           }
         });
         if (index != -1) {
           _playStatusCallbackMap.remove(index);
-          _playStatusStreamSubscriptionMap[index]?.cancel();
-          _playStatusStreamSubscriptionMap.remove(index);
+          if (isCancel) {
+            _playStatusStreamSubscription?.cancel();
+            _playStatusStreamSubscription = null;
+          }
         }
       }
       return Future.value();

@@ -74,6 +74,6 @@ object ErrorCode {
 }
 
 object Data {
-    var connectedListenerMap: HashMap<Int, XmPlayerManager.IConnectListener>? = null
-    var playerStatusListenerMap: HashMap<Int, IXmPlayerStatusListener>? = null
+    var connectedListener: XmPlayerManager.IConnectListener? = null
+    var playerStatusListener: IXmPlayerStatusListener? = null
 }
