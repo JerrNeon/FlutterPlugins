@@ -25,12 +25,9 @@ class StreamHandlerIml(private val context: Context) : EventChannel.StreamHandle
                         "${Methods.addOnConnectedListener}$index" -> {
                             if (Data.connectedListenerMap == null)
                                 Data.connectedListenerMap = hashMapOf()
-                            XmPlayerManager.getInstance(context).addOnConnectedListerner(object : XmPlayerManager.IConnectListener {
-                                override fun onConnected() {
-                                    Data.connectedListenerMap!![index] = this
-                                    events?.success(true)
-                                }
-                            })
+                            val connectListener = XmPlayerManager.IConnectListener { events?.success(true) }
+                            Data.connectedListenerMap!![index] = connectListener
+                            XmPlayerManager.getInstance(context).addOnConnectedListerner(connectListener)
                         }
                     }
                 } else if (method.contains(Methods.addPlayerStatusListener)) {
