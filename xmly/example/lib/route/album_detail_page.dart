@@ -342,10 +342,10 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
           context, MaterialPageRoute(builder: (context) => PlayPage()));
     } else {
       _iConnectCallback = () async {
-        await xmly.removeOnConnectedListener(_iConnectCallback);
         _initListener();
         await xmly.playList(list: list, playIndex: playIndex);
         _getCurrPlayTrackId(isInit: false);
+        await xmly.removeOnConnectedListener(_iConnectCallback);
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => PlayPage()));
       };
