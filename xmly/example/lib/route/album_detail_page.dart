@@ -345,7 +345,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
         _initListener();
         await xmly.playList(list: list, playIndex: playIndex);
         _getCurrPlayTrackId(isInit: false);
-        await xmly.removeOnConnectedListener(_iConnectCallback);
+        await xmly.removeOnConnectedListener(_iConnectCallback, isCancel: true);
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => PlayPage()));
       };
