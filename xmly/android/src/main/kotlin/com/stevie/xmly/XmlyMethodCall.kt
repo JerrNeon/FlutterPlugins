@@ -1,8 +1,5 @@
 package com.stevie.xmly
 
-import com.ximalaya.ting.android.opensdk.player.XmPlayerManager
-import com.ximalaya.ting.android.opensdk.player.service.IXmPlayerStatusListener
-
 /**
  * Author：Stevie.Chen Time：2020/5/27
  * Class Comment：
@@ -29,7 +26,7 @@ object Methods {
     const val stop = "stop"
     const val playPre = "playPre"
     const val playNext = "playNext"
-    const val getPlayMode = "getPlayMode";
+    const val getPlayMode = "getPlayMode"
     const val setPlayMode = "setPlayMode"
     const val getPlayerStatus = "getPlayerStatus"
     const val isPlaying = "isPlaying"
@@ -42,19 +39,30 @@ object Methods {
     const val seekTo = "seekTo"
     const val getCurrSound = "getCurrSound"
     const val getCurrPlayType = "getCurrPlayType"
-    const val addOnConnectedListener = "addOnConnectedListener"
-    const val addPlayerStatusListener = "addPlayerStatusListener"
     const val pausePlayInMillis = "pausePlayInMillis"
+    const val initListener = "initListener"
+    const val removeListener = "removeListener"
+    const val onConnected = "onConnected"
+    const val onPlayStart = "onPlayStart"
+    const val onPlayPause = "onPlayPause"
+    const val onPlayStop = "onPlayStop"
+    const val onSoundPlayComplete = "onSoundPlayComplete"
+    const val onSoundPrepared = "onSoundPrepared"
+    const val onSoundSwitch = "onSoundSwitch"
+    const val onBufferingStart = "onBufferingStart"
+    const val onBufferProgress = "onBufferProgress"
+    const val onBufferingStop = "onBufferingStop"
+    const val onPlayProgress = "onPlayProgress"
+    const val onError = "onError"
     const val release = "release"
 }
 
 object Arguments {
-    const val method = "method"
     const val isDebug = "isDebug"
-    const val AppKey = "AppKey";
-    const val PackId = "PackId";
-    const val AppSecret = "AppSecret";
-    const val useHttps = "useHttps";
+    const val appKey = "AppKey"
+    const val packId = "PackId"
+    const val appSecret = "AppSecret"
+    const val useHttps = "useHttps"
     const val isTargetSDKVersion24More = "isTargetSDKVersion24More"
     const val url = "url"
     const val params = "params"
@@ -65,15 +73,11 @@ object Arguments {
     const val playMode = "playMode"
     const val seekPercent = "seekPercent"
     const val seekPos = "seekPos"
-    const val listenerIndex = "listenerIndex"
     const val pausePlayInMillis = "pausePlayInMillis"
+    const val progress = "progress"
+    const val error = "error"
 }
 
 object ErrorCode {
-    const val xmlyException = "xmlyException";
-}
-
-object Data {
-    var connectedListener: XmPlayerManager.IConnectListener? = null
-    var playerStatusListener: IXmPlayerStatusListener? = null
+    const val xmlyException = "xmlyException"
 }

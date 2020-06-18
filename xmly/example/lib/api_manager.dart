@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
-import 'package:xmly/xmly_index.dart';
+import 'package:xmly/xmly_plugin.dart';
 import 'package:xmly_example/api_config.dart';
 import 'package:xmly_example/models/index.dart';
 

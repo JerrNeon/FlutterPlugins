@@ -1,20 +1,22 @@
 package com.stevie.xmly
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.*
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 /** XmlyPlugin */
-public class XmlyPlugin : FlutterPlugin {
+class XmlyPlugin : FlutterPlugin {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private lateinit var methodChannel: MethodChannel
-    private lateinit var eventChannel: EventChannel
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
     // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -27,7 +29,6 @@ public class XmlyPlugin : FlutterPlugin {
     // in the same class.
     companion object {
         const val CHANNEL_NAME = "plugins.stevie/xmly"
-        const val CHANNEL_NAME2 = "plugins.stevie/xmly2"
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
@@ -46,16 +47,11 @@ public class XmlyPlugin : FlutterPlugin {
 
     private fun setupChannel(messenger: BinaryMessenger, context: Context) {
         methodChannel = MethodChannel(messenger, CHANNEL_NAME)
-        val methodCallHandler = MethodCallHandlerImpl(context)
+        val methodCallHandler = MethodCallHandlerImpl(context, methodChannel)
         methodChannel.setMethodCallHandler(methodCallHandler)
-
-        eventChannel = EventChannel(messenger, CHANNEL_NAME2)
-        val streamHandler = StreamHandlerIml(context)
-        eventChannel.setStreamHandler(streamHandler)
     }
 
     private fun teardownChannel() {
         methodChannel.setMethodCallHandler(null)
-        eventChannel.setStreamHandler(null)
     }
 }

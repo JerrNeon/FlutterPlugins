@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:xmly/xmly_index.dart';
+import 'package:xmly/xmly_plugin.dart';
 import 'package:xmly_example/api_manager.dart';
 import 'package:xmly_example/models/index.dart';
 import 'package:xmly_example/route/play_page.dart';
@@ -16,11 +18,14 @@ class AlbumDetailPage extends StatefulWidget {
 
 class _AlbumDetailPageState extends State<AlbumDetailPage> {
   final int albumId;
+  final xmly = Xmly();
   int _currPlayTrackId = 0;
   Future<AlbumPageList> _albumFuture;
   Future<TrackPageList> _trackFuture;
-  IConnectCallback _iConnectCallback;
-  IPlayStatusCallback _iPlayStatusCallback;
+  StreamSubscription _onConnectedSubscription;
+  StreamSubscription _onPlayStartSubscription;
+  StreamSubscription _onPlayPauseSubscription;
+  StreamSubscription _onSoundPreparedSubscription;
 
   _AlbumDetailPageState(this.albumId);
 
@@ -30,13 +35,13 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     _initAlbumFuture();
     _initTrackFuture();
     _initListener();
-    _getCurrPlayTrackId();
   }
 
   @override
   void dispose() {
-    if (_iPlayStatusCallback != null)
-      Xmly().removePlayerStatusListener(_iPlayStatusCallback);
+    _onPlayStartSubscription.cancel();
+    _onPlayPauseSubscription.cancel();
+    _onSoundPreparedSubscription.cancel();
     super.dispose();
   }
 
@@ -48,26 +53,23 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     _trackFuture = ApiManager().getTracks(albumId: albumId);
   }
 
-  _initListener() async {
-    bool isConnected = await Xmly().isConnected();
-    if (isConnected) {
-      _iPlayStatusCallback ??= IPlayStatusCallback();
-      _iPlayStatusCallback.onSoundSwitch = () {
-        _getCurrPlayTrackId(isInit: false);
-        print("xmly -> onSoundSwitch");
-      };
-      Xmly().addPlayerStatusListener(_iPlayStatusCallback);
-    }
-  }
-
-  _getCurrPlayTrackId({bool isInit = true}) async {
-    Track track = await Xmly().getCurrSound();
-    if (track != null) {
-      _currPlayTrackId = track.id;
-      if (!isInit && mounted) {
-        setState(() {});
+  _initListener() {
+    _onPlayStartSubscription = xmly.onPlayStart.listen((event) {
+      print("album detail -> onPlayStart");
+    });
+    _onPlayPauseSubscription = xmly.onPlayPause.listen((event) {
+      print("album detail -> onPlayPause");
+    });
+    _onSoundPreparedSubscription = xmly.onSoundPrepared.listen((event) async {
+      print("album detail -> onSoundPrepared");
+      Track track = await xmly.getCurrSound();
+      if (track != null) {
+        _currPlayTrackId = track.id;
+        if (mounted) {
+          setState(() {});
+        }
       }
-    }
+    });
   }
 
   @override
@@ -334,22 +336,19 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
   }
 
   _play(List<Track> list, int playIndex) async {
-    Xmly xmly = Xmly();
     bool isConnected = await xmly.isConnected();
     if (isConnected) {
       await xmly.playList(list: list, playIndex: playIndex);
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => PlayPage()));
     } else {
-      _iConnectCallback = () async {
-        _initListener();
+      _onConnectedSubscription = xmly.onConnected.listen((event) async {
+        print("album detail page -> onConnected");
         await xmly.playList(list: list, playIndex: playIndex);
-        _getCurrPlayTrackId(isInit: false);
-        await xmly.removeOnConnectedListener(_iConnectCallback, isCancel: true);
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => PlayPage()));
-      };
-      await xmly.addOnConnectedListener(_iConnectCallback);
+        _onConnectedSubscription.cancel();
+      });
       await xmly.initPlayer(
         notificationId: DateTime.now().millisecond,
         notificationClassName: "com.stevie.xmly_example.MainActivity",

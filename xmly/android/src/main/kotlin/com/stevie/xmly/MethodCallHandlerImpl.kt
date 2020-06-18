@@ -9,6 +9,7 @@ import com.ximalaya.ting.android.opensdk.datatrasfer.CommonRequest
 import com.ximalaya.ting.android.opensdk.datatrasfer.IDataCallBack
 import com.ximalaya.ting.android.opensdk.datatrasfer.XimalayaResponse
 import com.ximalaya.ting.android.opensdk.httputil.XimalayaException
+import com.ximalaya.ting.android.opensdk.model.PlayableModel
 import com.ximalaya.ting.android.opensdk.model.live.radio.Radio
 import com.ximalaya.ting.android.opensdk.model.live.schedule.Schedule
 import com.ximalaya.ting.android.opensdk.model.track.Track
@@ -16,7 +17,9 @@ import com.ximalaya.ting.android.opensdk.player.XmPlayerManager
 import com.ximalaya.ting.android.opensdk.player.appnotification.NotificationColorUtils
 import com.ximalaya.ting.android.opensdk.player.appnotification.XmNotificationCreater
 import com.ximalaya.ting.android.opensdk.player.constants.PlayerConstants
+import com.ximalaya.ting.android.opensdk.player.service.IXmPlayerStatusListener
 import com.ximalaya.ting.android.opensdk.player.service.XmPlayListControl
+import com.ximalaya.ting.android.opensdk.player.service.XmPlayerException
 import com.ximalaya.ting.android.opensdk.util.BaseUtil
 import com.ximalaya.ting.android.player.XMediaPlayerConstants
 import io.flutter.plugin.common.MethodCall
@@ -28,7 +31,10 @@ import java.lang.Exception
  * Author：Stevie.Chen Time：2020/5/27
  * Class Comment：
  */
-class MethodCallHandlerImpl(private val context: Context) : MethodChannel.MethodCallHandler {
+class MethodCallHandlerImpl(private val context: Context, private val methodChannel: MethodChannel) : MethodChannel.MethodCallHandler {
+
+    private var iConnectListener: XmPlayerManager.IConnectListener? = null
+    private var iXmPlayerStatusListener: IXmPlayerStatusListener? = null
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         try {
@@ -37,31 +43,31 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     val isDebug = call.argument<Boolean>(Arguments.isDebug) ?: false
                     ConstantsOpenSdk.isDebug = isDebug
                     XMediaPlayerConstants.isDebug = isDebug
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.init -> {
                     if (BaseUtil.isMainProcess(context)) {
-                        val appKey = call.argument<String>(Arguments.AppKey)
-                        val packId = call.argument<String>(Arguments.PackId)
-                        val appSecret = call.argument<String>(Arguments.AppSecret)
+                        val appKey = call.argument<String>(Arguments.appKey)
+                        val packId = call.argument<String>(Arguments.packId)
+                        val appSecret = call.argument<String>(Arguments.appSecret)
                         CommonRequest.getInstanse().setAppkey(appKey)
                         CommonRequest.getInstanse().setPackid(packId)
                         CommonRequest.getInstanse().init(context, appSecret)
-                        result.success(true)
+                        result.success(null)
                     }
                 }
                 Methods.setUseHttps -> {
                     if (BaseUtil.isMainProcess(context)) {
                         val useHttps = call.argument<Boolean>(Arguments.useHttps)
                         CommonRequest.getInstanse().useHttps = useHttps ?: false
-                        result.success(true)
+                        result.success(null)
                     }
                 }
                 Methods.isTargetSDKVersion24More -> {
                     val isTargetSDKVersion24More = call.argument<Boolean>(Arguments.isTargetSDKVersion24More)
                     NotificationColorUtils.isTargerSDKVersion24More = isTargetSDKVersion24More
                             ?: false
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.baseGetRequest -> {
                     val url = call.argument<String>(Arguments.url)
@@ -124,7 +130,7 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                             ?: ""))
                     XmPlayerManager.getInstance(context).init(notificationId
                             ?: System.currentTimeMillis().toInt(), notification)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.isConnected -> {
                     result.success(XmPlayerManager.getInstance(context).isConnected)
@@ -135,21 +141,21 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     val gson = Gson()
                     val list = playList?.map { gson.fromJson(it, Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).playList(list, playIndex ?: 0)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.addTracksToPlayList -> {
                     val playList = call.argument<List<String>>(Arguments.playList)
                     val gson = Gson()
                     val list = playList?.map { gson.fromJson(it, Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).addTracksToPlayList(list)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.insertTracksToPlayListHead -> {
                     val playList = call.argument<List<String>>(Arguments.playList)
                     val gson = Gson()
                     val list = playList?.map { gson.fromJson(it, Track::class.java) }?.toList()
                     XmPlayerManager.getInstance(context).insertTracksToPlayListHead(list)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.permutePlayList -> {
                     result.success(XmPlayerManager.getInstance(context).permutePlayList())
@@ -170,23 +176,23 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     } else {
                         XmPlayerManager.getInstance(context).play()
                     }
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.pause -> {
                     XmPlayerManager.getInstance(context).pause()
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.stop -> {
                     XmPlayerManager.getInstance(context).stop()
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.playPre -> {
                     XmPlayerManager.getInstance(context).playPre()
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.playNext -> {
                     XmPlayerManager.getInstance(context).playNext()
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.getPlayMode -> {
                     result.success(XmPlayerManager.getInstance(context).playMode.ordinal)
@@ -195,7 +201,7 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     val playMode = call.argument<Int>(Arguments.playMode)
                             ?: XmPlayListControl.PlayMode.PLAY_MODEL_LIST.ordinal
                     XmPlayerManager.getInstance(context).playMode = XmPlayListControl.PlayMode.getIndex(playMode)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.getPlayerStatus -> {
                     PlayerConstants.STATE_STARTED
@@ -223,12 +229,12 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     val seekPercent: Double? = call.argument<Double>(Arguments.seekPercent)
                     XmPlayerManager.getInstance(context).seekToByPercent(seekPercent?.toFloat()
                             ?: 0f)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.seekTo -> {
                     val seekPos = call.argument<Int>(Arguments.seekPos) ?: 0
                     XmPlayerManager.getInstance(context).seekTo(seekPos)
-                    result.success(true)
+                    result.success(null)
                 }
                 Methods.getCurrSound -> {
                     val gson = Gson()
@@ -257,12 +263,26 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
                     val mills = call.argument<String>(Arguments.pausePlayInMillis)?.toLongOrNull()
                             ?: 0
                     XmPlayerManager.getInstance(context).pausePlayInMillis(mills)
-                    result.success(true)
+                    result.success(null)
+                }
+                Methods.initListener -> {
+                    iConnectListener = XmPlayerManager.IConnectListener { methodChannel.invokeMethod(Methods.onConnected, null) }
+                    iXmPlayerStatusListener = PlayerStatusListenerIml(methodChannel)
+                    XmPlayerManager.getInstance(context).addOnConnectedListerner(iConnectListener)
+                    XmPlayerManager.getInstance(context).addPlayerStatusListener(iXmPlayerStatusListener)
+                }
+                Methods.removeListener -> {
+                    iConnectListener?.let {
+                        XmPlayerManager.getInstance(context).removeOnConnectedListerner(it)
+                    }
+                    iXmPlayerStatusListener?.let {
+                        XmPlayerManager.getInstance(context).removePlayerStatusListener(it)
+                    }
                 }
                 Methods.release -> {
                     XmPlayerManager.release()
                     CommonRequest.release()
-                    result.success(true)
+                    result.success(null)
                 }
                 else -> result.notImplemented()
             }
@@ -277,3 +297,56 @@ class MethodCallHandlerImpl(private val context: Context) : MethodChannel.Method
 }
 
 data class XmResponse(val json: String?) : XimalayaResponse()
+
+class PlayerStatusListenerIml(private val methodChannel: MethodChannel) : IXmPlayerStatusListener {
+    override fun onPlayStart() {
+        methodChannel.invokeMethod(Methods.onPlayStart, null)
+    }
+
+    override fun onPlayPause() {
+        methodChannel.invokeMethod(Methods.onPlayPause, null)
+    }
+
+    override fun onPlayStop() {
+        methodChannel.invokeMethod(Methods.onPlayStop, null)
+    }
+
+    override fun onSoundPlayComplete() {
+        methodChannel.invokeMethod(Methods.onSoundPlayComplete, null)
+    }
+
+    override fun onSoundPrepared() {
+        methodChannel.invokeMethod(Methods.onSoundPrepared, null)
+    }
+
+    override fun onSoundSwitch(p0: PlayableModel?, p1: PlayableModel?) {
+        methodChannel.invokeMethod(Methods.onSoundSwitch, null)
+    }
+
+    override fun onBufferingStart() {
+        methodChannel.invokeMethod(Methods.onBufferingStart, null)
+    }
+
+    override fun onBufferProgress(progress: Int) {
+        methodChannel.invokeMethod(Methods.onBufferProgress, hashMapOf(
+                Arguments.progress to progress
+        ))
+    }
+
+    override fun onBufferingStop() {
+        methodChannel.invokeMethod(Methods.onBufferingStop, null)
+    }
+
+    override fun onPlayProgress(currPos: Int, duration: Int) {
+        methodChannel.invokeMethod(Methods.onPlayProgress, hashMapOf(
+                Arguments.progress to currPos * 1f / duration
+        ))
+    }
+
+    override fun onError(e: XmPlayerException?): Boolean {
+        methodChannel.invokeMethod(Methods.onError, hashMapOf(
+                Arguments.error to e.toString()
+        ))
+        return false
+    }
+}

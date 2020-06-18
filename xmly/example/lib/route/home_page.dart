@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:xmly/xmly_plugin.dart';
 import 'package:xmly_example/api_manager.dart';
 import 'package:xmly_example/models/index.dart';
 import 'package:xmly_example/route/album_detail_page.dart';
@@ -12,16 +13,43 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final xmly = Xmly();
   Future<ColumnAlbumPageList> _future;
 
   @override
   void initState() {
-    super.initState();
     _initFuture();
+    _initListener();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    xmly.dispose();
+    super.dispose();
   }
 
   _initFuture() {
     _future = ApiManager().getColumnList(id: 6880);
+  }
+
+  _initListener() {
+    xmly.initListener();
+    xmly.onConnected.listen((event) {
+      print("home page -> onConnected");
+    });
+    xmly.onPlayStart.listen((event) {
+      print("home page -> onPlayStart");
+    });
+    xmly.onPlayPause.listen((event) {
+      print("home page -> onPlayPause");
+    });
+    xmly.onSoundPrepared.listen((event) {
+      print("home page -> onSoundPrepared");
+    });
+    xmly.onSoundSwitch.listen((event) {
+      print("home page -> onSoundSwitch");
+    });
   }
 
   @override

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:xmly/xmly.dart';
+import 'package:xmly/xmly_plugin.dart';
 import 'package:xmly_example/route/home_page.dart';
 
 void main() {
@@ -15,48 +14,58 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isInitComplete = false;
+  final xmly = Xmly();
+  Future _future;
 
   @override
   void initState() {
-    super.initState();
     _initXmly();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    xmly.release();
+    super.dispose();
   }
 
   _initXmly() async {
-    await Xmly.isDebug(isDebug: !isRelease);
-    await Xmly.init(
-      appKey: "857b7fc3d1ab3a0388f1c27a63f3ef85",
-      packId: "com.stevie.xmly_example",
-      appSecret: "21b73a1e994be13be6673b8d9d3a0151",
-    );
-    await Xmly.useHttps(useHttps: true);
-    await Xmly.isTargetSDKVersion24More(isTargetSDKVersion24More: true);
-    if (mounted) {
-      setState(() {
-        isInitComplete = true;
-      });
-    }
+    _future = Future.wait([
+      xmly.isDebug(isDebug: !isRelease),
+      xmly.init(
+        appKey: "857b7fc3d1ab3a0388f1c27a63f3ef85",
+        packId: "com.stevie.xmly_example",
+        appSecret: "21b73a1e994be13be6673b8d9d3a0151",
+      ),
+      xmly.useHttps(useHttps: true),
+      xmly.isTargetSDKVersion24More(isTargetSDKVersion24More: true),
+      Future.delayed(Duration(seconds: 1)),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: isInitComplete ? HomePage() : LoadingWidget(),
-    );
-  }
-}
-
-class LoadingWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Color(0xf0f0f0)),
-      body: Container(
-        color: Color(0xf0f0f0),
-        child: CircularProgressIndicator(),
-      ),
+      home: FutureBuilder(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                return Container();
+              } else {
+                return HomePage();
+              }
+            } else {
+              return Scaffold(
+                appBar: AppBar(backgroundColor: Color(0xf0f0f0)),
+                body: Container(
+                  color: Color(0xf0f0f0),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+          }),
     );
   }
 }

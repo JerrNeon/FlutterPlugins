@@ -33,20 +33,30 @@ class Methods {
   static const seekTo = "seekTo";
   static const getCurrSound = "getCurrSound";
   static const getCurrPlayType = "getCurrPlayType";
-  static const addOnConnectedListener = "addOnConnectedListener";
-  static const removeOnConnectedListener = "removeOnConnectedListener";
-  static const addPlayerStatusListener = "addPlayerStatusListener";
-  static const removePlayerStatusListener = "removePlayerStatusListener";
   static const pausePlayInMillis = "pausePlayInMillis";
+  static const initListener = "initListener";
+  static const removeListener = "removeListener";
+  static const onConnected = "onConnected";
+  static const onPlayStart = "onPlayStart";
+  static const onPlayPause = "onPlayPause";
+  static const onPlayStop = "onPlayStop";
+  static const onSoundPlayComplete = "onSoundPlayComplete";
+  static const onSoundPrepared = "onSoundPrepared";
+  static const onSoundSwitch = "onSoundSwitch";
+  static const onBufferingStart = "onBufferingStart";
+  static const onBufferProgress = "onBufferProgress";
+  static const onBufferingStop = "onBufferingStop";
+  static const onPlayProgress = "onPlayProgress";
+  static const onError = "onError";
   static const release = "release";
 }
 
 class Arguments {
   static const method = "method";
   static const isDebug = "isDebug";
-  static const AppKey = "AppKey";
-  static const PackId = "PackId";
-  static const AppSecret = "AppSecret";
+  static const appKey = "AppKey";
+  static const packId = "PackId";
+  static const appSecret = "AppSecret";
   static const useHttps = "useHttps";
   static const isTargetSDKVersion24More = "isTargetSDKVersion24More";
   static const url = "url";
@@ -58,8 +68,9 @@ class Arguments {
   static const playMode = "playMode";
   static const seekPercent = "seekPercent";
   static const seekPos = "seekPos";
-  static const listenerIndex = "listenerIndex";
   static const pausePlayInMillis = "pausePlayInMillis";
+  static const progress = "progress";
+  static const error = "error";
 }
 
 class ErrorCode {
